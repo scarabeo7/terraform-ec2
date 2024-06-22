@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   terraform:
-    name: 'Terraform Deployment'
+    name: 'Terraform'
     runs-on: ubuntu-latest
     environment: production
 
@@ -38,15 +38,15 @@ jobs:
           rm -rf .terraform
           terraform init -upgrade=true -no-color -input=false
 
-    # Generates an execution plan for Terraform
-      - name: Terraform Plan
-        run: terraform plan -input=false
+    # # Generates an execution plan for Terraform
+    #   - name: Terraform Plan
+    #     run: terraform plan -input=false
 
-      # On push to "main", build or change infrastructure according to Terraform configuration files
-      - name: Terraform Apply
-        if: github.ref == 'refs/heads/main'
-        run: terraform apply -auto-approve -input=false
+    #   # On push to "main", build or change infrastructure according to Terraform configuration files
+    #   - name: Terraform Apply
+    #     if: github.ref == 'refs/heads/main'
+    #     run: terraform apply -auto-approve -input=false
 
-      # - name: Terraform Destroy
-      #   if: github.ref == 'refs/heads/destroy'
-      #   run: terraform destroy -auto-approve -input=false
+      - name: Terraform Destroy
+        if: github.ref == 'refs/heads/destroy'
+        run: terraform destroy -auto-approve -input=false
