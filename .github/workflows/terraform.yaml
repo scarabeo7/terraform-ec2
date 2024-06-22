@@ -1,0 +1,52 @@
+name: 'Terraform ec2 which is behind an application load balancer and is managed by an ASG deployment to AWS'
+
+on:
+  push:
+    branches:
+    - "main"
+  pull_request:
+  workflow_dispatch:    
+
+permissions:
+  contents: read
+
+jobs:
+  terraform:
+    name: 'Terraform Deployment'
+    runs-on: ubuntu-latest
+    environment: production
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+    
+    # Configure AWS Credentials Setup Terraform
+    env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: eu-west-2
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+      - uses: actions/checkout@v3
+      - uses: hashicorp/setup-terraform@v1
+
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+      - name: Terraform Init
+        run: |
+          rm -rf .terraform
+          terraform init -upgrade=true -no-color -input=false
+
+    # Generates an execution plan for Terraform
+      - name: Terraform Plan
+        run: terraform plan -input=false
+
+      # On push to "main", build or change infrastructure according to Terraform configuration files
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
+        run: terraform apply -auto-approve -input=false
+
+      # - name: Terraform Destroy
+      #   if: github.ref == 'refs/heads/destroy'
+      #   run: terraform destroy -auto-approve -input=false
